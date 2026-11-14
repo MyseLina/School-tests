@@ -31,7 +31,7 @@ class TestSerializer(serializers.ModelSerializer):
 
     def _attempt(self, obj):
         student = getattr(self.context["request"].user, "student", None)
-        return obj.attempt.filters(student=student).first() if student else None
+        return obj.attempts.filters(student=student).first() if student else None
 
     def get_is_open(self, obj):
         return obj.is_open()
@@ -46,7 +46,7 @@ class TestSerializer(serializers.ModelSerializer):
         attempt = self._attempt(obj)
         return attempt.score if attempt else 0
 
-    def validate_subjects(self, subjects):
+    def validate_subject(self, subjects):
         if not subjects:
             raise serializers.ValidationError("Kamida 1ta sinf tanlang!")
         teacher = getattr(self.context["request"].user, "teacher", None)
@@ -64,7 +64,7 @@ class TestSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         questions = validated_data.pop("questions")
-        subjects = validated_data.pop("subjects")
+        subjects = validated_data.pop("subject")
         test = Test.objects.create(**validated_data)
         test.subjects.set(subjects)
         Question.objects.create([Question(test=test, **q) for q in questions])

@@ -28,22 +28,22 @@ class TestViewSet(viewsets.ModelViewSet):
         if is_admin(user):
             return qys
         if hasattr(user, "teachers"):
-            return qys.filter(teacher=user.teachers)
+            return qys.filter(teacher=user.teacher)
         if hasattr(user, "students"):
-            return qys.filter(subjects__grade=user.student.grade).distinct()
+            return qys.filter(subjects__grade=user.students.grade).distinct()
         return qys.none()
 
     def perform_create(self, serializer):
-        serializer.save(teacehr=getattr(self.rquest.user, "teacher", None))
+        serializer.save(teacher=getattr(self.request.user, "teacher", None))
 
     @action(detail=True, methods=["post"], permission_classes=[IsStudent])
     def start(self, request, pk=None):
         test = self.get_object()
         if not test.is_open():
             return Response({"detail": "Test muddati tugagan"}, status=400)
-        if test.quetions.count() != 10:
+        if test.questions.count() != 10:
             return Response({"detail": "Test hali to'liq emas"}, status=400)
-        attempt, _ = Attempt.objects.get_or_create(student=request.user.student, test=test)
+        attempt, _ = Attempt.objects.get_or_create(student=request.user.students, test=test)
         if attempt.finished:
             return Response({"Testni allaqachon topshirib bo'lgansiz!"}, status=400)
         questions = QuestionPublicSerializer(test.questions.all(), many=True).data
@@ -52,7 +52,7 @@ class TestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], permission_classes=[IsStudent])
     def answer(self, request, pk=None):
         test = self.get_object()
-        attempt = Attempt.objects.filter(student=request.user.student, test=test).first()
+        attempt = Attempt.objects.filter(student=request.user.students, test=test).first()
         if attempt is None or attempt.finished or not test.is_open():
             return Response({"detail": "Test faol emas"}, status=400)
         try:
@@ -60,7 +60,7 @@ class TestViewSet(viewsets.ModelViewSet):
             variant = int(request.data.get("variant"))
         except (TypeError, ValueError):
             return Response({"detail": "Noto'g'ri ma'lumot"}, status=400)
-        question = test.question.filter(pk=qu_id).first()
+        question = test.questions.filter(pk=qu_id).first()
         if question is None or variant not in (1, 2, 3, 4):
             return Response({"detail": "Noto'g'ri savol yoki variant"}, status=400)
         if str(qu_id) in attempt.answers:
@@ -71,8 +71,8 @@ class TestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsStudent])
     def finish(self, request, pk=None):
-        test =self.get_object()
-        attempt = Attempt.objects.filter(student=request.user.student, test=test).first()
+        test = self.get_object()
+        attempt = Attempt.objects.filter(student=request.user.students, test=test).first()
         if attempt is None or attempt.finished:
             return Response({"detail": "Test faol emas"}, status=400)
         if not test.is_open():
@@ -81,4 +81,4 @@ class TestViewSet(viewsets.ModelViewSet):
         attempt.score = score
         attempt.finished = True
         attempt.save()
-        return Response({"score": score, "total": test.question.count()})
+        return Response({"score": score, "total": test.questions.count()})

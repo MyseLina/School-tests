@@ -30,12 +30,12 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
-    path('wulima/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('auth/', include('djoser.urls.jwt')),
     path('api/', include('students.urls')),
     path('api/', include('teachers.urls')),
     path('api/', include('subjects.urls')),
     path('api/', include('quizzes.urls')),
     path('api/', include('attempts.urls')),
-    path('wulimcha', schema_view.with_ui('swagger', cache_timeout=0)),
+    path('swagger', schema_view.with_ui('swagger', cache_timeout=0)),
 ]
