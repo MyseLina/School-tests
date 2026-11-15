@@ -15,8 +15,8 @@ class AttemptViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_admin(user):
             return qys
-        if hasattr(user, "teacher"):
-            return qys.filter(test__teacher=user.teacher)
-        if hasattr(user, "student"):
-            return qys.filter(student=user.student)
+        if hasattr(user, "teachers"):
+            return qys.filter(test__teacher=user.teachers)
+        if hasattr(user, "students"):
+            return qys.filter(student=user.students)
         return qys.none()

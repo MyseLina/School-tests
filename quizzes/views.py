@@ -28,13 +28,15 @@ class TestViewSet(viewsets.ModelViewSet):
         if is_admin(user):
             return qys
         if hasattr(user, "teachers"):
-            return qys.filter(teacher=user.teacher)
+            return qys.filter(teacher=user.teachers)
         if hasattr(user, "students"):
-            return qys.filter(subjects__grade=user.students.grade).distinct()
-        return qys.none()
+            student = user.students
+            if student.grade:
+                return qys.filter(subject__grade=user.students.grade).distinct()
+            return qys.none()
 
     def perform_create(self, serializer):
-        serializer.save(teacher=getattr(self.request.user, "teacher", None))
+        serializer.save(teacher=getattr(self.request.user, "teachers", None))
 
     @action(detail=True, methods=["post"], permission_classes=[IsStudent])
     def start(self, request, pk=None):

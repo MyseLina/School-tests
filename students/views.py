@@ -19,6 +19,6 @@ class StudentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qys = Student.objects.all().order_by("last_name")
-        if hasattr(user, "student") and not (user.is_staff or user.is_superuser):
+        if hasattr(user, "students") and not (user.is_staff or user.is_superuser):
             return qys.filter(user=user)
         return qys

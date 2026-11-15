@@ -9,7 +9,7 @@ class Test(models.Model):
     subject = models.ManyToManyField(Subject, related_name="tests", verbose_name="Fan")
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True,
                                 related_name="teachers", verbose_name="Yaratgan")
-    created = models.DateField("Yaratilgan vaqt" ,auto_now_add=True)
+    created = models.DateTimeField("Yaratilgan vaqt" ,auto_now_add=True)
     class Meta:
         verbose_name_plural = "Testlar"
 

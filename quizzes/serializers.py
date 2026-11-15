@@ -30,8 +30,8 @@ class TestSerializer(serializers.ModelSerializer):
 
 
     def _attempt(self, obj):
-        student = getattr(self.context["request"].user, "student", None)
-        return obj.attempts.filters(student=student).first() if student else None
+        student = getattr(self.context["request"].user, "students", None)
+        return obj.attempts.filter(student=student).first() if student else None
 
     def get_is_open(self, obj):
         return obj.is_open()
@@ -49,7 +49,7 @@ class TestSerializer(serializers.ModelSerializer):
     def validate_subject(self, subjects):
         if not subjects:
             raise serializers.ValidationError("Kamida 1ta sinf tanlang!")
-        teacher = getattr(self.context["request"].user, "teacher", None)
+        teacher = getattr(self.context["request"].user, "teachers", None)
         if teacher and any(not s.teacher.filter(pk=teacher.pk).exists() for s in subjects):
             raise serializers.ValidationError("Siz bu sinflarga dars o'tmaysiz!")
         if len({(s.name, s.grade.number) for s in subjects}) > 1:
@@ -66,6 +66,6 @@ class TestSerializer(serializers.ModelSerializer):
         questions = validated_data.pop("questions")
         subjects = validated_data.pop("subject")
         test = Test.objects.create(**validated_data)
-        test.subjects.set(subjects)
-        Question.objects.create([Question(test=test, **q) for q in questions])
+        test.subject.set(subjects)
+        Question.objects.bulk_create([Question(test=test, **q) for q in questions])
         return test
