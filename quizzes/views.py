@@ -34,6 +34,7 @@ class TestViewSet(viewsets.ModelViewSet):
             if student.grade:
                 return qys.filter(subject__grade=user.students.grade).distinct()
             return qys.none()
+        return qys.none()
 
     def perform_create(self, serializer):
         serializer.save(teacher=getattr(self.request.user, "teachers", None))
